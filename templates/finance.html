@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Финансы</title>
+
+<style>
+:root{
+  --bg:#f5f5f2;
+  --card:#fbfbf8;
+  --border:#e3e3de;
+  --text-main:#141414;
+  --text-muted:#6b6b6b;
+  --green:#2f8f5f;
+  --red:#a14a4a;
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  font-family:Helvetica,Arial,sans-serif;
+  display:flex;
+  justify-content:center;
+  color:var(--text-main);
+}
+
+.page{
+  width:100%;
+  max-width:420px;
+  padding:16px;
+  padding-bottom:180px;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+}
+
+.section{
+  background:var(--card);
+  border:1px solid var(--border);
+  padding:16px;
+}
+
+.title{
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-bottom:10px;
+}
+.title span{
+  cursor:pointer;
+  text-decoration:underline;
+}
+
+/* GRAPH */
+svg{width:100%;height:180px}
+
+/* INTERPRETATION */
+.interpretation{
+  margin-top:12px;
+  font-size:13px;
+  line-height:1.4;
+}
+.quote{font-style:italic}
+.author{
+  font-size:11px;
+  color:var(--text-muted);
+  margin-bottom:6px;
+}
+
+/* STATS */
+.stat-main{
+  font-size:22px;
+  font-weight:bold;
+}
+.stat-caption{
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-top:6px;
+}
+.stat-sub{
+  font-size:12px;
+  margin-top:4px;
+}
+.stats{
+  display:flex;
+  justify-content:space-between;
+  margin-top:12px;
+}
+.stat-value{font-size:16px}
+.stat-label{
+  font-size:10px;
+  color:var(--text-muted);
+  margin-top:4px;
+}
+.positive{color:var(--green)}
+.negative{color:var(--red)}
+
+/* FORM */
+.form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+input,select,button{
+  padding:12px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--text-main);
+}
+button{cursor:pointer}
+
+/* remove number arrows */
+input[type=number]{
+  -moz-appearance:textfield;
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+
+/* FLOW */
+.flow-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+}
+.flow-toggle{
+  font-size:14px;
+  color:var(--text-muted);
+}
+.flow-list{margin-top:8px}
+
+.flow-day{margin-top:14px}
+.flow-date{
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-bottom:6px;
+}
+.flow-item{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 0;
+  font-size:14px;
+}
+.flow-total{
+  font-weight:bold;
+  margin-top:4px;
+}
+
+/* DATE PICKER */
+.date-picker{
+  display:none;
+  margin-top:8px;
+}
+
+/* PALETTE */
+.palette{
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:12px;
+}
+.color-btn{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  border:none;
+  cursor:pointer;
+  box-shadow:0 6px 16px rgba(0,0,0,0.25);
+}
+  /* HEADER */
+.header{
+  margin-bottom:16px;
+}
+
+.back-btn{
+  background:none;
+  border:none;
+  padding:0;
+  font-size:13px;
+  color:var(--text-muted);
+  cursor:pointer;
+}
+.limits-btn{
+  width:100%;
+  padding:10px;
+  margin-top:12px;
+  background:none;
+  border:1px dashed var(--border);
+  border-radius:10px;
+  font-size:13px;
+  color:var(--text-muted);
+  cursor:pointer;
+}
+/* MODAL */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.25);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:100;
+}
+
+.modal-card{
+  width:94%;
+  max-width:420px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+}
+
+.modal-title{
+  font-size:11px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-bottom:14px;
+}
+
+
+
+
+
+/* ADD */
+.add-row{
+  width:100%;
+  padding:8px;
+  background:none;
+  border:1px dashed var(--border);
+  border-radius:8px;
+  font-size:13px;
+  color:var(--text-muted);
+  cursor:pointer;
+  margin-bottom:14px;
+}
+
+/* ACTIONS */
+.modal-actions{
+  display:flex;
+  gap:10px;
+}
+
+.modal-actions button{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:none;
+  cursor:pointer;
+}
+
+.modal-actions .primary{
+  border-color:var(--text-main);
+  color:var(--text-main);
+}
+
+.modal-actions .secondary{
+  color:var(--text-muted);
+}
+
+.limit-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:10px;
+}
+
+.limit-row input[type="checkbox"]{
+  flex:0 0 16px;
+}
+
+.limit-row input[type="text"]{
+  flex:2;
+}
+
+.limit-row input[type="number"]{
+  flex:1;
+}
+
+.modal-card{
+  overflow:hidden;
+}
+
+
+.limit-check{
+  width:16px;
+  height:16px;
+  accent-color: var(--text-main);
+  cursor:pointer;
+}
+
+.add-row.danger{
+color: var(--text-muted);
+border-style: solid;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+<main class="page">
+<!-- HEADER -->
+<div class="header">
+  <button class="back-btn" onclick="goHome()">← Назад</button>
+</div>
+
+<!-- ПРОГРЕСС -->
+<section class="section">
+  <div class="title">
+    Прогресс капитала · <span onclick="toggleDate()">месяц</span>
+  </div>
+  <div class="date-picker" id="datePicker">
+    <input type="date" id="selectedDate">
+  </div>
+
+  <svg id="chart"></svg>
+
+  <div class="interpretation" id="interpretation"></div>
+</section>
+
+<!-- ОБЩИЙ КАПИТАЛ -->
+<section class="section">
+  <div class="title">Цель</div>
+
+  <div class="stat-main positive">1 250 000 ₽</div>
+  <div class="stat-caption">Общий капитал</div>
+  <div class="stat-sub positive">+30 000 ₽ к 15 января</div>
+
+  <div class="stats">
+    <div>
+      <div class="stat-value">45 000 ₽</div>
+      <div class="stat-label">Сэкономлено</div>
+    </div>
+    <div>
+      <div class="stat-value">30 000 ₽</div>
+      <div class="stat-label">Отложено</div>
+    </div>
+    <div>
+      <div class="stat-value">25 000 ₽</div>
+      <div class="stat-label">Инвестировано</div>
+    </div>
+  </div>
+</section>
+
+<!-- ДЕЙСТВИЕ -->
+<section class="section">
+  <div class="title">Зафиксировать действие</div>
+  <form class="form" id="actionForm">
+    <select>
+      <option>Сэкономил</option>
+      <option>Отложил</option>
+      <option>Инвестировал</option>
+      <option>Расходовал</option>
+    </select>
+    <input type="number" placeholder="Сумма (₽)" required>
+    <button type="submit" id="submitBtn">Подтвердить</button>
+  </form>
+</section>
+<!-- ===== ЛИМИТЫ НА МЕСЯЦ ===== -->
+<section class="section">
+  <div class="title">Лимиты · январь</div>
+  <button class="limits-btn" onclick="openLimitsModal()">
+  Управление лимитами
+</button>
+
+
+  <div class="flow-day">
+    <div class="flow-item">
+      <span>Еда</span>
+      <span>10 000 / 2 350 ₽</span>
+    </div>
+
+    <div class="flow-item">
+      <span>Транспорт</span>
+      <span>1 000 / 100 ₽</span>
+    </div>
+
+    <div class="flow-item">
+      <span>Прочее</span>
+      <span>3 000 / 500 ₽</span>
+    </div>
+
+    <div class="flow-item">
+      <span>Хозяйственные</span>
+      <span>1 000 / — ₽</span>
+    </div>
+  </div>
+</section>
+
+<!-- ПОТОК -->
+<section class="section">
+  <div class="flow-header" onclick="toggleFlow()">
+    <div class="title" style="margin:0">Поток капитала · январь</div>
+    <div class="flow-toggle" id="flowToggle">▾</div>
+  </div>
+
+  <div class="flow-list" id="flowList">
+    <div class="flow-day">
+      <div class="flow-date">15 января</div>
+      <div class="flow-item"><span>Продукты</span><span class="negative">−1 000 ₽</span></div>
+      <div class="flow-item"><span>Отложено</span><span class="positive">+1 000 ₽</span></div>
+      <div class="flow-total positive">Итог дня: +1 000 ₽</div>
+    </div>
+  </div>
+
+<!-- LIMITS MODAL -->
+    <div class="modal-overlay" id="limitsModal">
+      <div class="modal-card">
+
+        <div class="modal-title">Лимиты · месяц</div>
+
+    <div class="limit-row">
+      <input type="checkbox" class="limit-check">
+      <input type="text" placeholder="Категория">
+      <input type="number" placeholder="Лимит ₽">
+    </div>
+
+
+
+    <div class="limit-row">
+      <input type="checkbox" class="limit-check">
+      <input type="text" placeholder="Категория" value="Транспорт">
+      <input type="number" placeholder="Лимит ₽" value="1000">
+    </div>
+
+    <div class="limit-row">
+      <input type="checkbox" class="limit-check">
+      <input type="text" placeholder="Категория" value="Прочее">
+      <input type="number" placeholder="Лимит ₽" value="3000">
+    </div>
+
+    <button class="add-row" onclick="addLimitRow()">+ Добавить категорию</button>
+    <button class="add-row danger" onclick="removeSelectedLimits()">
+  Удалить выбранные
+    </button>
+
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeLimitsModal()">Закрыть</button>
+      <button class="primary" onclick="saveLimits()">Сохранить</button>
+    </div>
+
+  </div>
+</div>
+
+
+</section>
+
+</main>
+
+<script>
+  function goHome(){
+  window.location.href = "/";
+}
+
+/* DATE PICKER */
+function toggleDate(){
+  const d=document.getElementById("datePicker");
+  d.style.display=d.style.display==="block"?"none":"block";
+}
+
+/* FLOW TOGGLE */
+let flowOpen=true;
+function toggleFlow(){
+  const list=document.getElementById("flowList");
+  const icon=document.getElementById("flowToggle");
+  flowOpen=!flowOpen;
+  list.style.display=flowOpen?"block":"none";
+  icon.innerText=flowOpen?"▾":"▸";
+}
+
+/* BUTTON FEEDBACK */
+const form=document.getElementById("actionForm");
+const btn=document.getElementById("submitBtn");
+form.addEventListener("submit",e=>{
+  e.preventDefault();
+  btn.innerText="Зафиксировано";
+  btn.disabled=true;
+  setTimeout(()=>{
+    btn.innerText="Подтвердить";
+    btn.disabled=false;
+    form.reset();
+  },500);
+});
+
+/* INTERPRETATION */
+const daily=[0.05,0.08,0.06,0.07,0.1];
+const today=daily[daily.length-1];
+const avg=daily.reduce((a,b)=>a+b,0)/daily.length;
+
+document.getElementById("interpretation").innerHTML=`
+  <div class="quote">Быстро — это медленно, но постоянно</div>
+  <div class="author">— Сенека</div>
+  <div>Сегодня: <b class="positive">${today.toFixed(2)}%</b></div>
+  <div>В среднем: <b>${avg.toFixed(2)}%</b> в день</div>
+  <div class="${today>=avg?"positive":"negative"}">
+    ${today>=avg?"Сегодняшний результат выше среднего":"Сегодняшний темп ниже среднего"}
+  </div>
+`;
+
+/* CANDLE GRAPH */
+const svg=document.getElementById("chart");
+const w=svg.clientWidth,h=svg.clientHeight,p=10;
+let base=10000;
+const candles=[];
+for(let i=0;i<30;i++){
+  const o=base;
+  const c=o+(Math.random()*3000-1200);
+  const hi=Math.max(o,c)+Math.random()*800;
+  const lo=Math.min(o,c)-Math.random()*800;
+  candles.push([o,hi,lo,c]);
+  base=c;
+}
+const vals=candles.flat();
+const max=Math.max(...vals),min=Math.min(...vals);
+const sy=v=>h-p-((v-min)/(max-min))*(h-p*2);
+const step=w/candles.length,cw=step*0.6;
+
+candles.forEach((c,i)=>{
+  const [o,hi,lo,cl]=c;
+  const x=i*step+step/2-cw/2;
+  const color=cl>=o?"var(--green)":"var(--red)";
+
+  const wick=document.createElementNS("http://www.w3.org/2000/svg","line");
+  wick.setAttribute("x1",x+cw/2);
+  wick.setAttribute("x2",x+cw/2);
+  wick.setAttribute("y1",sy(hi));
+  wick.setAttribute("y2",sy(lo));
+  wick.setAttribute("stroke",color);
+  svg.appendChild(wick);
+
+  const body=document.createElementNS("http://www.w3.org/2000/svg","rect");
+  body.setAttribute("x",x);
+  body.setAttribute("width",cw);
+  body.setAttribute("y",sy(Math.max(o,cl)));
+  body.setAttribute("height",Math.abs(sy(o)-sy(cl)));
+  body.setAttribute("fill",color);
+  svg.appendChild(body);
+});
+
+function openLimitsModal(){
+  document.getElementById("limitsModal").style.display="flex";
+}
+
+function closeLimitsModal(){
+  document.getElementById("limitsModal").style.display="none";
+}
+
+function addLimitRow(){
+  const row = document.createElement("div");
+  row.className = "limit-row";
+  row.innerHTML = `
+    <input type="checkbox" class="limit-check">
+    <input type="text" placeholder="Категория">
+    <input type="number" placeholder="Лимит ₽">
+  `;
+
+  document.querySelector(".modal-card").insertBefore(
+    row,
+    document.querySelector(".add-row")
+  );
+}
+
+function saveLimits(){
+  const rows = document.querySelectorAll(".limit-row");
+  const limits = [];
+
+  rows.forEach(r=>{
+    const name = r.querySelector('input[type="text"]').value;
+    const value = Number(r.querySelector('input[type="number"]').value);
+
+    if(name && value){
+      limits.push({ category:name, limit:value });
+    }
+  });
+
+  console.log("Лимиты:", limits);
+  closeLimitsModal();
+}
+
+
+function removeSelectedLimits(){
+const rows = document.querySelectorAll(".limit-row");
+rows.forEach(row=>{
+  const checkbox = row.querySelector(".limit-check");
+  if(checkbox && checkbox.checked){
+    row.remove();
+  }
+});
+}
+
+
+</script>
+
+</body>
+</html>

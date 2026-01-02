@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeOS — Главная</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+:root{
+  --bg:#f5f5f2;
+  --card:#fbfbf8;
+  --border:#e3e3de;
+  --text-main:#141414;
+  --text-muted:#6b6b6b;
+  --accent:#2f8f5f;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  font-family:Helvetica,Arial,sans-serif;
+  display:flex;
+  justify-content:center;
+  color:var(--text-main);
+}
+
+.app{
+  width:100%;
+  max-width:420px;
+  padding:16px;
+  padding-bottom:110px;
+}
+
+/* BLOCK */
+.block{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+}
+
+.block-title{
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-bottom:12px;
+}
+
+/* CONTEXT */
+.context-text{
+  font-size:15px;
+  line-height:1.6;
+  margin-bottom:6px;
+}
+.context-author{
+  font-size:12px;
+  color:var(--text-muted);
+}
+
+/* TASKS */
+.task{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.task:last-child{border-bottom:none}
+.task span{
+  font-size:11px;
+  color:var(--text-muted);
+}
+
+/* NAV */
+.nav{
+  position:fixed;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:420px;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  display:flex;
+}
+.nav button{
+  flex:1;
+  padding:14px 0;
+  background:none;
+  border:none;
+  font-size:11px;
+  color:var(--text-muted);
+}
+.nav button.active{
+  color:var(--accent);
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- CONTEXT -->
+  <div class="block">
+    <div class="block-title">Контекст</div>
+    <div class="context-text">
+      «Быстро — это медленно, но постоянно».
+    </div>
+    <div class="context-author">
+      — Сенека
+    </div>
+  </div>
+
+  <!-- FOCUS -->
+  <div class="block">
+    <div class="block-title">Фокус</div>
+
+    <div class="task">
+      <div>90 минут глубокой работы</div>
+      <span>Цель</span>
+    </div>
+
+    <div class="task">
+      <div>Физическая тренировка</div>
+      <span>Дисциплина</span>
+    </div>
+
+    <div class="task">
+      <div>Анализ прогресса</div>
+      <span>Контроль</span>
+    </div>
+
+    <div class="task">
+      <div>Финансовое действие</div>
+      <span>Ресурс</span>
+    </div>
+
+    <div class="task">
+      <div>Чтение / обучение</div>
+      <span>Рост</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="active">Главная</button>
+  <button>Цели</button>
+  <button>Привычки</button>
+  <button onclick="goFinance()">Финансы</button>
+  <button onclick="openProfile()">Профиль</button>
+</div>
+
+<script>
+function goFinance(){
+  window.location.href="/finance";
+}
+function openProfile(){
+  window.location.href="/profile";
+}
+
+if (window.Telegram?.WebApp){
+  Telegram.WebApp.ready();
+}
+</script>
+
+</body>
+</html>
