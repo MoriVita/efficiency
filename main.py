@@ -6,6 +6,8 @@ from psycopg2.pool import SimpleConnectionPool
 import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from fastapi import Query
+from psycopg2.extras import RealDictCursor
 
 
 
@@ -77,18 +79,6 @@ def metrics():
 
 
 
-@app.post("/api/finance/add")
-def add_finance(entry: FinanceEntry):
-    print("💰 NEW FINANCE ENTRY")
-    print(entry)
-
-    return {
-        "status": "ok",
-        "entry": entry
-    }
-
-
-
 def get_user_expenses(user_id: int):
     conn = pool.getconn()
     try:
@@ -124,7 +114,81 @@ def finance_summary(user_id: int):
     finally:
         pool.putconn(conn)
 
+# @app.get("/api/user/data")
+# def get_all_data():
+#     conn = pool.getconn()
+#     try:
+#         with conn.cursor(cursor_factory=RealDictCursor) as cur:
+#             cur.execute("""
+#                 SELECT id, user_id, category, monthly_limit, month, year
+#                 FROM limits
+#             """)
+#             return cur.fetchall()
+#     finally:
+#         pool.putconn(conn)
 
+@app.get("/api/user/data")
+def get_data(
+    user_id: int | None = Query(None),
+    category: str | None = Query(None),
+    month: int | None = Query(None),
+    year: int | None = Query(None),
+    monthly_limit: int | None = Query(None),
+):
+    conn = pool.getconn()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            query = "SELECT * FROM limits WHERE 1=1"
+            params = []
+
+            if user_id is not None:
+                query += " AND user_id = %s"
+                params.append(user_id)
+            if category is not None:
+                query += " AND category = %s"
+                params.append(category)
+            if month is not None:
+                query += " AND month = %s"
+                params.append(month)
+            if year is not None:
+                query += " AND year = %s"
+                params.append(year)
+            if monthly_limit is not None:
+                query += " AND monthly_limit = %s"
+                params.append(monthly_limit)
+
+            cur.execute(query, tuple(params))
+            return cur.fetchall()
+    finally:
+        pool.putconn(conn)
+
+
+
+# @app.get("/api/user/data")
+# def user_data(
+#         user_id: int = Query(...),
+#         category: str = Query(...),
+#         month: int = Query(...),
+#         year: int = Query(...)
+# ):
+#     conn = pool.getconn()
+#     try:
+#         with conn.cursor() as cur:
+#             cur.execute("""
+#                SELECT id FROM limits
+#                 WHERE user_id = %s
+#                   AND category = %s
+#                   AND month = %s
+#                   AND year = %s
+#             """,
+#                 (user_id, category, month, year)
+#             )
+#
+#             rows = cur.fetchall()
+#             return rows
+#
+#     finally:
+#         pool.putconn(conn)
 
 @app.post("/api/limits")
 def save_limit(limit: LimitIn):
@@ -174,27 +238,3 @@ def save_limit(limit: LimitIn):
         pool.putconn(conn)
 
 
-# def get_all_students_from_db():
-#     conn = pool.getconn()
-#     try:
-#         with conn.cursor() as cursor:
-#             cursor.execute("SELECT id, last_name, grade FROM students")
-#             return cursor.fetchall()
-#     finally:
-#         pool.putconn(conn)
-#
-#
-#
-# @app.get("/api/students")
-# def get_students():
-#     students = get_all_students_from_db()
-#
-#     # превращаем в JSON-удобный формат
-#     return [
-#         {
-#             "id": s[0],
-#             "last_name": s[1],
-#             "grade": s[2]
-#         }
-#         for s in students
-#     ]

@@ -387,6 +387,11 @@ border-style: solid;
       <span>10 000 / 2 350 ₽</span>
     </div>
 
+
+<button id="load">Загрузить данные</button>
+<pre id="output"></pre>
+
+
     <div class="flow-item">
       <span>Транспорт</span>
       <span>1 000 / 100 ₽</span>
@@ -466,6 +471,32 @@ border-style: solid;
 </main>
 
 <script>
+
+
+
+document.getElementById("load").onclick = async () => {
+    const response = await fetch("http://localhost:8000/api/user/data");
+    const data = await response.json();
+
+    document.getElementById("output").textContent =
+        JSON.stringify(data, null, 2);
+};
+
+
+  fetch("http://localhost:8000/api/user/data")
+    .then(res => res.json())
+    .then(data => {
+      const load = document.getElementById("load");
+      load.innerHTML = "";
+
+      data.forEach(item => {
+        load.innerHTML += `<li>${item.category} — ${item.monthly_limit}</li>`;
+      });
+    });
+
+
+
+
   function goHome(){
   window.location.href = "/";
 }
