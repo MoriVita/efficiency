@@ -310,7 +310,6 @@ color: var(--text-muted);
 border-style: solid;
 }
 
-}
 
 </style>
 </head>
@@ -429,9 +428,10 @@ border-style: solid;
 
     <div class="limit-row">
       <input type="checkbox" class="limit-check">
-      <input type="text" placeholder="Категория">
-      <input type="number" placeholder="Лимит ₽">
+      <input class="limit-category" placeholder="Категория">
+      <input class="limit-value" type="number" placeholder="Лимит ₽">
     </div>
+
 
 
 
@@ -578,22 +578,7 @@ function addLimitRow(){
   );
 }
 
-function saveLimits(){
-  const rows = document.querySelectorAll(".limit-row");
-  const limits = [];
 
-  rows.forEach(r=>{
-    const name = r.querySelector('input[type="text"]').value;
-    const value = Number(r.querySelector('input[type="number"]').value);
-
-    if(name && value){
-      limits.push({ category:name, limit:value });
-    }
-  });
-
-  console.log("Лимиты:", limits);
-  closeLimitsModal();
-}
 
 
 function removeSelectedLimits(){
@@ -604,6 +589,34 @@ rows.forEach(row=>{
     row.remove();
   }
 });
+}
+
+async function saveLimits() {
+  const rows = document.querySelectorAll(".limit-row");
+
+  const month = new Date().getMonth() + 1;
+  const year = new Date().getFullYear();
+
+  for (const row of rows) {
+    const category = row.querySelector(".limit-category")?.value;
+    const value = row.querySelector(".limit-value")?.value;
+
+    if (!category || !value) continue;
+
+    await fetch("/api/limits", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: 1,              // временно
+        category: category,
+        monthly_limit: Number(value),
+        month: month,
+        year: year
+      })
+    });
+  }
+
+  closeLimitsModal();
 }
 
 
