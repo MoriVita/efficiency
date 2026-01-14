@@ -316,10 +316,7 @@ border-style: solid;
 
 <body>
 <main class="page">
-<!-- HEADER -->
-<div class="header">
-  <button class="back-btn" onclick="goHome()">← Назад</button>
-</div>
+
 
 <!-- ПРОГРЕСС -->
 <section class="section">
@@ -379,33 +376,6 @@ border-style: solid;
   <button class="limits-btn" onclick="openLimitsModal()">
   Управление лимитами
 </button>
-
-
-  <div class="flow-day">
-    <div class="flow-item">
-      <span>Еда</span>
-      <span>10 000 / 2 350 ₽</span>
-    </div>
-
-
-<button id="load">Загрузить данные</button>
-<pre id="output"></pre>
-
-
-    <div class="flow-item">
-      <span>Транспорт</span>
-      <span>1 000 / 100 ₽</span>
-    </div>
-
-    <div class="flow-item">
-      <span>Прочее</span>
-      <span>3 000 / 500 ₽</span>
-    </div>
-
-    <div class="flow-item">
-      <span>Хозяйственные</span>
-      <span>1 000 / — ₽</span>
-    </div>
   </div>
 </section>
 
@@ -440,17 +410,6 @@ border-style: solid;
 
 
 
-    <div class="limit-row">
-      <input type="checkbox" class="limit-check">
-      <input type="text" placeholder="Категория" value="Транспорт">
-      <input type="number" placeholder="Лимит ₽" value="1000">
-    </div>
-
-    <div class="limit-row">
-      <input type="checkbox" class="limit-check">
-      <input type="text" placeholder="Категория" value="Прочее">
-      <input type="number" placeholder="Лимит ₽" value="3000">
-    </div>
 
     <button class="add-row" onclick="addLimitRow()">+ Добавить категорию</button>
     <button class="add-row danger" onclick="removeSelectedLimits()">
@@ -471,134 +430,107 @@ border-style: solid;
 </main>
 
 <script>
-
-
-
-document.getElementById("load").onclick = async () => {
-    const response = await fetch("http://localhost:8000/api/user/data");
-    const data = await response.json();
-
-    document.getElementById("output").textContent =
-        JSON.stringify(data, null, 2);
-};
-
-
-  fetch("http://localhost:8000/api/user/data")
-    .then(res => res.json())
-    .then(data => {
-      const load = document.getElementById("load");
-      load.innerHTML = "";
-
-      data.forEach(item => {
-        load.innerHTML += `<li>${item.category} — ${item.monthly_limit}</li>`;
-      });
-    });
-
-
-
-
-  function goHome(){
-  window.location.href = "/";
-}
-
 /* DATE PICKER */
 function toggleDate(){
-  const d=document.getElementById("datePicker");
-  d.style.display=d.style.display==="block"?"none":"block";
+  const d = document.getElementById("datePicker");
+  d.style.display = d.style.display === "block" ? "none" : "block";
 }
 
 /* FLOW TOGGLE */
-let flowOpen=true;
+let flowOpen = true;
 function toggleFlow(){
-  const list=document.getElementById("flowList");
-  const icon=document.getElementById("flowToggle");
-  flowOpen=!flowOpen;
-  list.style.display=flowOpen?"block":"none";
-  icon.innerText=flowOpen?"▾":"▸";
+  const list = document.getElementById("flowList");
+  const icon = document.getElementById("flowToggle");
+  flowOpen = !flowOpen;
+  list.style.display = flowOpen ? "block" : "none";
+  icon.innerText = flowOpen ? "▾" : "▸";
 }
 
 /* BUTTON FEEDBACK */
-const form=document.getElementById("actionForm");
-const btn=document.getElementById("submitBtn");
-form.addEventListener("submit",e=>{
+const form = document.getElementById("actionForm");
+const btn = document.getElementById("submitBtn");
+
+form.addEventListener("submit", e => {
   e.preventDefault();
-  btn.innerText="Зафиксировано";
-  btn.disabled=true;
-  setTimeout(()=>{
-    btn.innerText="Подтвердить";
-    btn.disabled=false;
+  btn.innerText = "Зафиксировано";
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerText = "Подтвердить";
+    btn.disabled = false;
     form.reset();
-  },500);
+  }, 500);
 });
 
-/* INTERPRETATION */
-const daily=[0.05,0.08,0.06,0.07,0.1];
-const today=daily[daily.length-1];
-const avg=daily.reduce((a,b)=>a+b,0)/daily.length;
+/* INTERPRETATION (временно статично) */
+const daily = [0.05, 0.08, 0.06, 0.07, 0.1];
+const today = daily[daily.length - 1];
+const avg = daily.reduce((a, b) => a + b, 0) / daily.length;
 
-document.getElementById("interpretation").innerHTML=`
+document.getElementById("interpretation").innerHTML = `
   <div class="quote">Быстро — это медленно, но постоянно</div>
   <div class="author">— Сенека</div>
   <div>Сегодня: <b class="positive">${today.toFixed(2)}%</b></div>
   <div>В среднем: <b>${avg.toFixed(2)}%</b> в день</div>
-  <div class="${today>=avg?"positive":"negative"}">
-    ${today>=avg?"Сегодняшний результат выше среднего":"Сегодняшний темп ниже среднего"}
+  <div class="${today >= avg ? "positive" : "negative"}">
+    ${today >= avg ? "Сегодняшний результат выше среднего" : "Сегодняшний темп ниже среднего"}
   </div>
 `;
 
-/* CANDLE GRAPH */
-const svg=document.getElementById("chart");
-const w=svg.clientWidth,h=svg.clientHeight,p=10;
-let base=10000;
-const candles=[];
-for(let i=0;i<30;i++){
-  const o=base;
-  const c=o+(Math.random()*3000-1200);
-  const hi=Math.max(o,c)+Math.random()*800;
-  const lo=Math.min(o,c)-Math.random()*800;
-  candles.push([o,hi,lo,c]);
-  base=c;
+/* CANDLE GRAPH (random, временно) */
+const svg = document.getElementById("chart");
+const w = svg.clientWidth, h = svg.clientHeight, p = 10;
+let base = 10000;
+const candles = [];
+
+for (let i = 0; i < 30; i++) {
+  const o = base;
+  const c = o + (Math.random() * 3000 - 1200);
+  const hi = Math.max(o, c) + Math.random() * 800;
+  const lo = Math.min(o, c) - Math.random() * 800;
+  candles.push([o, hi, lo, c]);
+  base = c;
 }
-const vals=candles.flat();
-const max=Math.max(...vals),min=Math.min(...vals);
-const sy=v=>h-p-((v-min)/(max-min))*(h-p*2);
-const step=w/candles.length,cw=step*0.6;
 
-candles.forEach((c,i)=>{
-  const [o,hi,lo,cl]=c;
-  const x=i*step+step/2-cw/2;
-  const color=cl>=o?"var(--green)":"var(--red)";
+const vals = candles.flat();
+const max = Math.max(...vals), min = Math.min(...vals);
+const sy = v => h - p - ((v - min) / (max - min)) * (h - p * 2);
+const step = w / candles.length, cw = step * 0.6;
 
-  const wick=document.createElementNS("http://www.w3.org/2000/svg","line");
-  wick.setAttribute("x1",x+cw/2);
-  wick.setAttribute("x2",x+cw/2);
-  wick.setAttribute("y1",sy(hi));
-  wick.setAttribute("y2",sy(lo));
-  wick.setAttribute("stroke",color);
+candles.forEach((c, i) => {
+  const [o, hi, lo, cl] = c;
+  const x = i * step + step / 2 - cw / 2;
+  const color = cl >= o ? "var(--green)" : "var(--red)";
+
+  const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  wick.setAttribute("x1", x + cw / 2);
+  wick.setAttribute("x2", x + cw / 2);
+  wick.setAttribute("y1", sy(hi));
+  wick.setAttribute("y2", sy(lo));
+  wick.setAttribute("stroke", color);
   svg.appendChild(wick);
 
-  const body=document.createElementNS("http://www.w3.org/2000/svg","rect");
-  body.setAttribute("x",x);
-  body.setAttribute("width",cw);
-  body.setAttribute("y",sy(Math.max(o,cl)));
-  body.setAttribute("height",Math.abs(sy(o)-sy(cl)));
-  body.setAttribute("fill",color);
+  const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  body.setAttribute("x", x);
+  body.setAttribute("width", cw);
+  body.setAttribute("y", sy(Math.max(o, cl)));
+  body.setAttribute("height", Math.abs(sy(o) - sy(cl)));
+  body.setAttribute("fill", color);
   svg.appendChild(body);
 });
 
+/* LIMITS MODAL (только UI) */
 function openLimitsModal(){
-  document.getElementById("limitsModal").style.display="flex";
+  document.getElementById("limitsModal").style.display = "flex";
 }
 
 function closeLimitsModal(){
-  document.getElementById("limitsModal").style.display="none";
+  document.getElementById("limitsModal").style.display = "none";
 }
 
 function addLimitRow(){
   const row = document.createElement("div");
   row.className = "limit-row";
   row.innerHTML = `
-    <input type="checkbox" class="limit-check">
     <input type="text" placeholder="Категория">
     <input type="number" placeholder="Лимит ₽">
   `;
@@ -608,50 +540,8 @@ function addLimitRow(){
     document.querySelector(".add-row")
   );
 }
-
-
-
-
-function removeSelectedLimits(){
-const rows = document.querySelectorAll(".limit-row");
-rows.forEach(row=>{
-  const checkbox = row.querySelector(".limit-check");
-  if(checkbox && checkbox.checked){
-    row.remove();
-  }
-});
-}
-
-async function saveLimits() {
-  const rows = document.querySelectorAll(".limit-row");
-
-  const month = new Date().getMonth() + 1;
-  const year = new Date().getFullYear();
-
-  for (const row of rows) {
-    const category = row.querySelector(".limit-category")?.value;
-    const value = row.querySelector(".limit-value")?.value;
-
-    if (!category || !value) continue;
-
-    await fetch("/api/limits", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: 1,              // временно
-        category: category,
-        monthly_limit: Number(value),
-        month: month,
-        year: year
-      })
-    });
-  }
-
-  closeLimitsModal();
-}
-
-
 </script>
+
 
 </body>
 </html>
