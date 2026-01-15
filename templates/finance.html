@@ -180,7 +180,7 @@ input[type=number]::-webkit-outer-spin-button{
   cursor:pointer;
   box-shadow:0 6px 16px rgba(0,0,0,0.25);
 }
-  /* HEADER */
+/* HEADER */
 .header{
   margin-bottom:16px;
 }
@@ -232,10 +232,6 @@ input[type=number]::-webkit-outer-spin-button{
   color:var(--text-muted);
   margin-bottom:14px;
 }
-
-
-
-
 
 /* ADD */
 .add-row{
@@ -297,7 +293,6 @@ input[type=number]::-webkit-outer-spin-button{
   overflow:hidden;
 }
 
-
 .limit-check{
   width:16px;
   height:16px;
@@ -306,17 +301,14 @@ input[type=number]::-webkit-outer-spin-button{
 }
 
 .add-row.danger{
-color: var(--text-muted);
-border-style: solid;
+  color: var(--text-muted);
+  border-style: solid;
 }
-
-
 </style>
 </head>
 
 <body>
 <main class="page">
-
 
 <!-- ПРОГРЕСС -->
 <section class="section">
@@ -336,21 +328,21 @@ border-style: solid;
 <section class="section">
   <div class="title">Цель</div>
 
-  <div class="stat-main positive">1 250 000 ₽</div>
+  <div class="stat-main" id="capitalMain">—</div>
   <div class="stat-caption">Общий капитал</div>
-  <div class="stat-sub positive">+30 000 ₽ к 15 января</div>
+  <div class="stat-sub" id="capitalDelta">—</div>
 
   <div class="stats">
     <div>
-      <div class="stat-value">45 000 ₽</div>
+      <div class="stat-value" id="savedVal">—</div>
       <div class="stat-label">Сэкономлено</div>
     </div>
     <div>
-      <div class="stat-value">30 000 ₽</div>
+      <div class="stat-value" id="incomeVal">—</div>
       <div class="stat-label">Отложено</div>
     </div>
     <div>
-      <div class="stat-value">25 000 ₽</div>
+      <div class="stat-value" id="investedVal">—</div>
       <div class="stat-label">Инвестировано</div>
     </div>
   </div>
@@ -360,83 +352,86 @@ border-style: solid;
 <section class="section">
   <div class="title">Зафиксировать действие</div>
   <form class="form" id="actionForm">
-    <select>
-      <option>Сэкономил</option>
-      <option>Отложил</option>
-      <option>Инвестировал</option>
-      <option>Расходовал</option>
+    <select id="kindSelect">
+      <option value="save">Сэкономил</option>
+      <option value="income">Отложил</option>
+      <option value="invest">Инвестировал</option>
+      <option value="expense">Расходовал</option>
+      <option value="withdraw">Вывел</option>
     </select>
-    <input type="number" placeholder="Сумма (₽)" required>
+    <input id="amountInput" type="number" placeholder="Сумма (₽)" required>
     <button type="submit" id="submitBtn">Подтвердить</button>
   </form>
 </section>
+
 <!-- ===== ЛИМИТЫ НА МЕСЯЦ ===== -->
 <section class="section">
-  <div class="title">Лимиты · январь</div>
+  <div class="title" id="limitsTitle">Лимиты · месяц</div>
   <button class="limits-btn" onclick="openLimitsModal()">
-  Управление лимитами
-</button>
-  </div>
+    Управление лимитами
+  </button>
 </section>
 
 <!-- ПОТОК -->
 <section class="section">
   <div class="flow-header" onclick="toggleFlow()">
-    <div class="title" style="margin:0">Поток капитала · январь</div>
+    <div class="title" style="margin:0" id="flowTitle">Поток капитала · 7 дней</div>
     <div class="flow-toggle" id="flowToggle">▾</div>
   </div>
 
-  <div class="flow-list" id="flowList">
-    <div class="flow-day">
-      <div class="flow-date">15 января</div>
-      <div class="flow-item"><span>Продукты</span><span class="negative">−1 000 ₽</span></div>
-      <div class="flow-item"><span>Отложено</span><span class="positive">+1 000 ₽</span></div>
-      <div class="flow-total positive">Итог дня: +1 000 ₽</div>
+  <div class="flow-list" id="flowList"></div>
+
+  <!-- LIMITS MODAL -->
+  <div class="modal-overlay" id="limitsModal">
+    <div class="modal-card">
+      <div class="modal-title">Лимиты · месяц</div>
+
+      <div id="limitsRows"></div>
+
+      <button class="add-row" onclick="addLimitRow()">+ Добавить категорию</button>
+      <button class="add-row danger" onclick="removeSelectedLimits()">Удалить выбранные</button>
+
+      <div class="modal-actions">
+        <button class="secondary" onclick="closeLimitsModal()">Закрыть</button>
+        <button class="primary" onclick="saveLimits()">Сохранить</button>
+      </div>
+
     </div>
   </div>
-
-<!-- LIMITS MODAL -->
-    <div class="modal-overlay" id="limitsModal">
-      <div class="modal-card">
-
-        <div class="modal-title">Лимиты · месяц</div>
-
-    <div class="limit-row">
-      <input type="checkbox" class="limit-check">
-      <input class="limit-category" placeholder="Категория">
-      <input class="limit-value" type="number" placeholder="Лимит ₽">
-    </div>
-
-
-
-
-
-    <button class="add-row" onclick="addLimitRow()">+ Добавить категорию</button>
-    <button class="add-row danger" onclick="removeSelectedLimits()">
-  Удалить выбранные
-    </button>
-
-    <div class="modal-actions">
-      <button class="secondary" onclick="closeLimitsModal()">Закрыть</button>
-      <button class="primary" onclick="saveLimits()">Сохранить</button>
-    </div>
-
-  </div>
-</div>
-
-
 </section>
 
 </main>
 
 <script>
-/* DATE PICKER */
+/* ---------- helpers ---------- */
+const fmtRub = (n) => {
+  const sign = n < 0 ? "−" : "";
+  const abs = Math.abs(Math.round(n));
+  return sign + abs.toLocaleString("ru-RU") + " ₽";
+};
+
+const iso = (d) => d.toISOString().slice(0,10);
+const daysAgo = (n) => new Date(Date.now() - n*86400000);
+
+function monthNameRu(m){
+  const names=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+  return names[m-1] || "месяц";
+}
+
+function formatDateRu(isoDate){
+  // isoDate: YYYY-MM-DD
+  const [y,m,d]=isoDate.split("-").map(Number);
+  const months=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+  return `${d} ${months[m-1]}`;
+}
+
+/* ---------- DATE PICKER UI ---------- */
 function toggleDate(){
   const d = document.getElementById("datePicker");
   d.style.display = d.style.display === "block" ? "none" : "block";
 }
 
-/* FLOW TOGGLE */
+/* ---------- FLOW TOGGLE ---------- */
 let flowOpen = true;
 function toggleFlow(){
   const list = document.getElementById("flowList");
@@ -446,102 +441,337 @@ function toggleFlow(){
   icon.innerText = flowOpen ? "▾" : "▸";
 }
 
-/* BUTTON FEEDBACK */
+/* ---------- API ---------- */
+async function apiGet(url){
+  const r = await fetch(url);
+  if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+  return await r.json();
+}
+
+async function apiPost(url, body){
+  const r = await fetch(url,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+  return await r.json();
+}
+
+/* ---------- LOAD: capital ---------- */
+async function loadCapital(){
+  const data = await apiGet("/api/finance/capital");
+  const total = data.total || 0;
+
+  const el = document.getElementById("capitalMain");
+  el.textContent = fmtRub(total);
+  el.className = "stat-main " + (total>=0 ? "positive":"negative");
+
+  // "дельта" — прирост за последние 30 дней (по net из flow)
+  const from = iso(daysAgo(30));
+  const to = iso(new Date());
+  const days = await apiGet(`/api/finance/flow?start=${from}&end=${to}`);
+  const net30 = (days || []).reduce((a,d)=>a+(d.net||0),0);
+
+  const deltaEl = document.getElementById("capitalDelta");
+  deltaEl.textContent = (net30>=0?"+":"") + fmtRub(net30) + " к " + formatDateRu(to);
+  deltaEl.className = "stat-sub " + (net30>=0 ? "positive":"negative");
+
+  // агрегаты по kind за 30 дней
+  let saved=0, invested=0, income=0;
+  (days || []).forEach(d=>{
+    (d.events||[]).forEach(e=>{
+      if(e.kind==="save") saved += e.amount||0;
+      if(e.kind==="invest") invested += e.amount||0;
+      if(e.kind==="income") income += e.amount||0;
+    });
+  });
+
+  document.getElementById("savedVal").textContent = fmtRub(saved);
+  document.getElementById("savedVal").className = "stat-value " + (saved>=0 ? "positive":"negative");
+
+  document.getElementById("incomeVal").textContent = fmtRub(income);
+  document.getElementById("incomeVal").className = "stat-value " + (income>=0 ? "positive":"negative");
+
+  document.getElementById("investedVal").textContent = fmtRub(invested);
+  document.getElementById("investedVal").className = "stat-value " + (invested>=0 ? "positive":"negative");
+}
+
+/* ---------- LOAD: flow list (7 days) ---------- */
+async function loadFlow(){
+  const from = iso(daysAgo(7));
+  const to = iso(new Date());
+  const days = await apiGet(`/api/finance/flow?start=${from}&end=${to}`);
+
+  const box = document.getElementById("flowList");
+  box.innerHTML = "";
+
+  // title month (из today)
+  const now = new Date();
+  document.getElementById("flowTitle").textContent = `Поток капитала · ${monthNameRu(now.getMonth()+1)}`;
+
+  (days || []).forEach(d=>{
+    const dayBlock = document.createElement("div");
+    dayBlock.className = "flow-day";
+
+    dayBlock.innerHTML = `<div class="flow-date">${formatDateRu(d.day)}</div>`;
+
+    (d.events || []).forEach(e=>{
+      const amount = e.amount || 0;
+      const cls = amount>=0 ? "positive":"negative";
+      const label = e.kind; // пока kind (категории будут позже)
+      dayBlock.innerHTML += `
+        <div class="flow-item">
+          <span>${label}</span>
+          <span class="${cls}">${fmtRub(amount)}</span>
+        </div>`;
+    });
+
+    const net = d.net || 0;
+    dayBlock.innerHTML += `
+      <div class="flow-total ${net>=0?"positive":"negative"}">
+        Итог дня: ${fmtRub(net)}
+      </div>`;
+
+    box.appendChild(dayBlock);
+  });
+}
+
+/* ---------- LOAD: candle chart (30 days) ---------- */
+async function loadChart(){
+  const from = iso(daysAgo(30));
+  const to = iso(new Date());
+  const days = await apiGet(`/api/finance/flow?start=${from}&end=${to}`);
+
+  // строим candles от net (капитал как линия)
+  let base = 0;
+  const candles = (days || []).slice().reverse().map(d=>{
+    const o = base;
+    const c = base + (d.net||0);
+    const hi = Math.max(o,c);
+    const lo = Math.min(o,c);
+    base = c;
+    return [o,hi,lo,c];
+  });
+
+  drawCandles(candles);
+
+  // interpretation (без цитат пока, но реальная математика)
+  const nets = (days||[]).map(d=>d.net||0);
+  const today = nets.length ? nets[nets.length-1] : 0;
+  const avg = nets.length ? nets.reduce((a,b)=>a+b,0)/nets.length : 0;
+
+  document.getElementById("interpretation").innerHTML = `
+    <div>Сегодня: <b class="${today>=0?"positive":"negative"}">${fmtRub(today)}</b></div>
+    <div>В среднем: <b>${fmtRub(avg)}</b> в день</div>
+    <div class="${today>=avg?"positive":"negative"}">
+      ${today>=avg ? "Сегодняшний результат выше среднего" : "Сегодняшний темп ниже среднего"}
+    </div>
+  `;
+}
+
+function drawCandles(candles){
+  const svg = document.getElementById("chart");
+  svg.innerHTML = "";
+
+  const w = svg.clientWidth, h = svg.clientHeight, p = 10;
+  if(!candles.length){
+    return;
+  }
+  const vals = candles.flat();
+  const max = Math.max(...vals);
+  const min = Math.min(...vals);
+  const denom = (max - min) || 1;
+
+  const sy = v => h - p - ((v - min) / denom) * (h - p * 2);
+  const step = w / candles.length;
+  const cw = step * 0.6;
+
+  candles.forEach((c, i) => {
+    const [o, hi, lo, cl] = c;
+    const x = i * step + step / 2 - cw / 2;
+    const color = cl >= o ? "var(--green)" : "var(--red)";
+
+    const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    wick.setAttribute("x1", x + cw / 2);
+    wick.setAttribute("x2", x + cw / 2);
+    wick.setAttribute("y1", sy(hi));
+    wick.setAttribute("y2", sy(lo));
+    wick.setAttribute("stroke", color);
+    svg.appendChild(wick);
+
+    const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    body.setAttribute("x", x);
+    body.setAttribute("width", cw);
+    body.setAttribute("y", sy(Math.max(o, cl)));
+    body.setAttribute("height", Math.max(1, Math.abs(sy(o) - sy(cl))));
+    body.setAttribute("fill", color);
+    svg.appendChild(body);
+  });
+}
+
+/* ---------- FORM submit ---------- */
 const form = document.getElementById("actionForm");
 const btn = document.getElementById("submitBtn");
 
-form.addEventListener("submit", e => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  btn.innerText = "Зафиксировано";
+
+  const kind = document.getElementById("kindSelect").value;
+  const amount = Number(document.getElementById("amountInput").value);
+
+  if(!amount || amount<=0){
+    alert("Введите сумму");
+    return;
+  }
+
+  btn.innerText = "Сохраняем...";
   btn.disabled = true;
-  setTimeout(() => {
-    btn.innerText = "Подтвердить";
-    btn.disabled = false;
+
+  try{
+    await apiPost("/api/finance/events",{
+      kind,
+      amount,
+      category_id: null,
+      date: null
+    });
+
+    btn.innerText = "Зафиксировано";
     form.reset();
-  }, 500);
+
+    // обновляем всё
+    await Promise.all([loadCapital(), loadFlow(), loadChart()]);
+  }catch(err){
+    console.error(err);
+    btn.innerText = "Ошибка";
+    alert("Не удалось сохранить действие");
+  }finally{
+    setTimeout(()=>{
+      btn.innerText = "Подтвердить";
+      btn.disabled = false;
+    }, 600);
+  }
 });
 
-/* INTERPRETATION (временно статично) */
-const daily = [0.05, 0.08, 0.06, 0.07, 0.1];
-const today = daily[daily.length - 1];
-const avg = daily.reduce((a, b) => a + b, 0) / daily.length;
-
-document.getElementById("interpretation").innerHTML = `
-  <div class="quote">Быстро — это медленно, но постоянно</div>
-  <div class="author">— Сенека</div>
-  <div>Сегодня: <b class="positive">${today.toFixed(2)}%</b></div>
-  <div>В среднем: <b>${avg.toFixed(2)}%</b> в день</div>
-  <div class="${today >= avg ? "positive" : "negative"}">
-    ${today >= avg ? "Сегодняшний результат выше среднего" : "Сегодняшний темп ниже среднего"}
-  </div>
-`;
-
-/* CANDLE GRAPH (random, временно) */
-const svg = document.getElementById("chart");
-const w = svg.clientWidth, h = svg.clientHeight, p = 10;
-let base = 10000;
-const candles = [];
-
-for (let i = 0; i < 30; i++) {
-  const o = base;
-  const c = o + (Math.random() * 3000 - 1200);
-  const hi = Math.max(o, c) + Math.random() * 800;
-  const lo = Math.min(o, c) - Math.random() * 800;
-  candles.push([o, hi, lo, c]);
-  base = c;
-}
-
-const vals = candles.flat();
-const max = Math.max(...vals), min = Math.min(...vals);
-const sy = v => h - p - ((v - min) / (max - min)) * (h - p * 2);
-const step = w / candles.length, cw = step * 0.6;
-
-candles.forEach((c, i) => {
-  const [o, hi, lo, cl] = c;
-  const x = i * step + step / 2 - cw / 2;
-  const color = cl >= o ? "var(--green)" : "var(--red)";
-
-  const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  wick.setAttribute("x1", x + cw / 2);
-  wick.setAttribute("x2", x + cw / 2);
-  wick.setAttribute("y1", sy(hi));
-  wick.setAttribute("y2", sy(lo));
-  wick.setAttribute("stroke", color);
-  svg.appendChild(wick);
-
-  const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  body.setAttribute("x", x);
-  body.setAttribute("width", cw);
-  body.setAttribute("y", sy(Math.max(o, cl)));
-  body.setAttribute("height", Math.abs(sy(o) - sy(cl)));
-  body.setAttribute("fill", color);
-  svg.appendChild(body);
-});
-
-/* LIMITS MODAL (только UI) */
+/* ---------- LIMITS MODAL ---------- */
 function openLimitsModal(){
   document.getElementById("limitsModal").style.display = "flex";
+  loadLimits().catch(console.error);
 }
 
 function closeLimitsModal(){
   document.getElementById("limitsModal").style.display = "none";
 }
 
-function addLimitRow(){
+function addLimitRow(prefill){
   const row = document.createElement("div");
   row.className = "limit-row";
+
   row.innerHTML = `
-    <input type="text" placeholder="Категория">
-    <input type="number" placeholder="Лимит ₽">
+    <input type="checkbox" class="limit-check">
+    <input class="limit-category" type="text" placeholder="Категория" value="${prefill?.category ? escapeHtml(prefill.category) : ""}">
+    <input class="limit-value" type="number" placeholder="Лимит ₽" value="${prefill?.monthly_limit ?? ""}">
   `;
 
-  document.querySelector(".modal-card").insertBefore(
-    row,
-    document.querySelector(".add-row")
-  );
+  document.getElementById("limitsRows").appendChild(row);
 }
-</script>
 
+function removeSelectedLimits(){
+  const rows = document.querySelectorAll("#limitsRows .limit-row");
+  rows.forEach(r=>{
+    const cb = r.querySelector(".limit-check");
+    if(cb && cb.checked) r.remove();
+  });
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function loadLimits(){
+  const now = new Date();
+  const month = now.getMonth()+1;
+  const year = now.getFullYear();
+
+  document.getElementById("limitsTitle").textContent = `Лимиты · ${monthNameRu(month)}`;
+  document.querySelector("#limitsModal .modal-title").textContent = `Лимиты · ${monthNameRu(month)}`;
+
+  const box = document.getElementById("limitsRows");
+  box.innerHTML = "";
+
+  // Твой эндпоинт: GET /api/user/data?month=&year=
+  // Вернёт список лимитов (как ты в сервисе делаешь)
+  let data = [];
+  try{
+    data = await apiGet(`/api/user/data?month=${month}&year=${year}`);
+  }catch(e){
+    // если пока нет — это ок
+    data = [];
+  }
+
+  if(!data.length){
+    addLimitRow();
+    return;
+  }
+
+  data.forEach(l=>{
+    addLimitRow({
+      category: l.category,
+      monthly_limit: l.monthly_limit
+    });
+  });
+}
+
+async function saveLimits(){
+  const now = new Date();
+  const month = now.getMonth()+1;
+  const year = now.getFullYear();
+
+  const rows = document.querySelectorAll("#limitsRows .limit-row");
+
+  // сохраняем каждую строку POST /api/limits
+  // Твой LimitIn судя по коду принимает (user_id?, category, month, year, monthly_limit) — у тебя в limits.py user_id не берется из auth.
+  // Поэтому здесь нужно user_id: 1 временно (как раньше), иначе бек не знает кого сохранять.
+  // Если хочешь — сделаем limits роут безопасным через auth в следующем шаге.
+  const user_id = 1;
+
+  try{
+    for(const r of rows){
+      const category = r.querySelector(".limit-category")?.value?.trim();
+      const monthly_limit = Number(r.querySelector(".limit-value")?.value);
+
+      if(!category || !monthly_limit || monthly_limit<=0) continue;
+
+      await apiPost("/api/limits",{
+        user_id,
+        category,
+        month,
+        year,
+        monthly_limit
+      });
+    }
+
+    closeLimitsModal();
+  }catch(err){
+    console.error(err);
+    alert("Не удалось сохранить лимиты");
+  }
+}
+
+/* ---------- INIT ---------- */
+(async function init(){
+  const now = new Date();
+  const month = now.getMonth()+1;
+  document.getElementById("limitsTitle").textContent = `Лимиты · ${monthNameRu(month)}`;
+
+  await Promise.all([loadCapital(), loadFlow(), loadChart()]);
+})();
+</script>
 
 </body>
 </html>

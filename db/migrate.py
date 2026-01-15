@@ -1,40 +1,29 @@
-from db.database import DATABASE_URL
-import asyncpg
+import os
 from pathlib import Path
-
-
-
+from db.database import get_pool
 
 MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 
 
 async def run_migrations():
-    if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL is not set")
+    pool = get_pool()
 
-    conn = await asyncpg.connect(DATABASE_URL)
-
-    try:
-        # 1. гарантируем таблицу миграций
+    async with pool.acquire() as conn:
+        # 1. ГАРАНТИРУЕМ, ЧТО schema_migrations СУЩЕСТВУЕТ
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS schema_migrations (
                 version TEXT PRIMARY KEY,
-                applied_at TIMESTAMP DEFAULT now()
+                applied_at TIMESTAMP NOT NULL DEFAULT now()
             );
         """)
 
-        # 2. уже применённые миграции
-        rows = await conn.fetch("SELECT version FROM schema_migrations;")
-        applied = {row["version"] for row in rows}
+        # 2. ЧИТАЕМ УЖЕ ПРИМЕНЁННЫЕ МИГРАЦИИ
+        rows = await conn.fetch("SELECT version FROM schema_migrations")
+        applied = {r["version"] for r in rows}
 
-        # 3. все sql-файлы
-        migration_files = sorted(
-            f for f in MIGRATIONS_DIR.iterdir()
-            if f.suffix == ".sql"
-        )
-
-        for file in migration_files:
-            version = file.stem.split("_")[0]
+        # 3. ПРИМЕНЯЕМ НОВЫЕ
+        for file in sorted(MIGRATIONS_DIR.glob("*.sql")):
+            version = file.stem
 
             if version in applied:
                 continue
@@ -45,6 +34,3 @@ async def run_migrations():
             await conn.execute(sql)
 
         print("[migrate] all migrations applied")
-
-    finally:
-        await conn.close()

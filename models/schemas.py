@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
+
 
 
 class FinanceEntry(BaseModel):
@@ -28,3 +29,14 @@ class FinanceEventOut(BaseModel):
     amount: int
     kind: str
     category: Optional[str]
+
+
+class FinanceEventIn(BaseModel):
+    kind: str              # income | expense | save | invest | withdraw
+    amount: int
+    category_id: Optional[int] = None
+    date: Optional[date] = None
+
+
+class CapitalOut(BaseModel):
+    total: int
