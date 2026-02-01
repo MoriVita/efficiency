@@ -1,6 +1,7 @@
 from db.database import get_pool
 from datetime import datetime, time, date
-
+from typing import Any
+import json
 
 
 
@@ -57,7 +58,7 @@ async def get_capital(user_id: int) -> int:
             WHERE user_id = $1
         """, user_id)
 
-
+#добавить в "зафиксировать действие"
 async def get_flow(user_id: int, date_from, date_to):
     pool = get_pool()
     async with pool.acquire() as conn:
@@ -65,12 +66,15 @@ async def get_flow(user_id: int, date_from, date_to):
             SELECT
                 DATE(occurred_at) as day,
                 SUM(amount) as net,
-                json_agg(json_build_object(
-                    'id', id,
-                    'kind', kind,
-                    'amount', amount,
-                    'category_id', category_id
-                ) ORDER BY occurred_at) as events
+                json_agg(
+                    json_build_object(
+                        'id', id,
+                        'kind', kind,
+                        'amount', amount,
+                        'category_id', category_id
+                    )
+                    ORDER BY occurred_at
+                )::jsonb as events
             FROM finance_events_v2
             WHERE user_id = $1
               AND occurred_at BETWEEN $2 AND $3
@@ -78,8 +82,44 @@ async def get_flow(user_id: int, date_from, date_to):
             ORDER BY day DESC
         """, user_id, date_from, date_to)
 
-        return [dict(r) for r in rows]
 
+        result = []
+        for r in rows:
+            d = dict(r)
+
+  
+            if isinstance(d["events"], str):
+                d["events"] = json.loads(d["events"])
+
+            result.append(d)
+
+        return result
+
+#выводим kind по категориям
+async def test_select_kind(user_id: int, date_from: date, date_to: date) -> list[dict[str, Any]]:
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT
+                day,
+                json_object_agg(kind, total) AS by_kind
+            FROM (
+                SELECT
+                    DATE(occurred_at) AS day,
+                    kind,
+                    SUM(amount) AS total
+                FROM finance_events_v2
+                WHERE user_id = $1
+                  AND occurred_at BETWEEN $2 AND $3
+                GROUP BY DATE(occurred_at), kind
+            ) t
+            GROUP BY day
+            ORDER BY day DESC;
+            """,
+            user_id, date_from, date_to
+        )
+        return [dict(r) for r in rows]
 
 async def get_day(user_id: int, day: date):
     pool = get_pool()
@@ -122,6 +162,8 @@ async def add_finance_event(
             category,
             note,
         )
+
+
 
 
 async def get_finance_summary(telegram_user_id: int):

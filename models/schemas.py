@@ -1,7 +1,13 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, date
+from enum import Enum
 
+
+class FinanceKind(str, Enum):
+    income = "income"
+    expense = "expense"
+    transfer = "transfer"
 
 
 class FinanceEntry(BaseModel):
@@ -22,6 +28,8 @@ class FinanceEventIn(BaseModel):
     kind: str  # save | invest | expense
     category: Optional[str] = None
     note: Optional[str] = None
+    date: Optional[date] = None
+    category_id: Optional[int] = None
 
 
 class FinanceEventOut(BaseModel):
@@ -31,11 +39,11 @@ class FinanceEventOut(BaseModel):
     category: Optional[str]
 
 
-class FinanceEventIn(BaseModel):
-    kind: str              # income | expense | save | invest | withdraw
-    amount: int
-    category_id: Optional[int] = None
-    date: Optional[date] = None
+# class FinanceEventIn(BaseModel):
+#     kind: str              # income | expense | save | invest | withdraw
+#     amount: int
+#     category_id: Optional[int] = None
+#     date: Optional[date] = None
 
 
 class CapitalOut(BaseModel):

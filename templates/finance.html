@@ -163,36 +163,7 @@ input[type=number]::-webkit-outer-spin-button{
   margin-top:8px;
 }
 
-/* PALETTE */
-.palette{
-  position:fixed;
-  bottom:24px;
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  gap:12px;
-}
-.color-btn{
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  border:none;
-  cursor:pointer;
-  box-shadow:0 6px 16px rgba(0,0,0,0.25);
-}
-/* HEADER */
-.header{
-  margin-bottom:16px;
-}
-
-.back-btn{
-  background:none;
-  border:none;
-  padding:0;
-  font-size:13px;
-  color:var(--text-muted);
-  cursor:pointer;
-}
+/* LIMITS */
 .limits-btn{
   width:100%;
   padding:10px;
@@ -204,6 +175,23 @@ input[type=number]::-webkit-outer-spin-button{
   color:var(--text-muted);
   cursor:pointer;
 }
+.limits-list{
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.limit-chip{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--bg);
+  font-size:14px;
+}
+.limit-chip .muted{ color:var(--text-muted); font-size:12px; }
+
 /* MODAL */
 .modal-overlay{
   position:fixed;
@@ -214,7 +202,6 @@ input[type=number]::-webkit-outer-spin-button{
   align-items:center;
   z-index:100;
 }
-
 .modal-card{
   width:94%;
   max-width:420px;
@@ -223,8 +210,8 @@ input[type=number]::-webkit-outer-spin-button{
   border-radius:18px;
   padding:18px;
   box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  overflow:hidden;
 }
-
 .modal-title{
   font-size:11px;
   letter-spacing:2px;
@@ -232,8 +219,6 @@ input[type=number]::-webkit-outer-spin-button{
   color:var(--text-muted);
   margin-bottom:14px;
 }
-
-/* ADD */
 .add-row{
   width:100%;
   padding:8px;
@@ -245,13 +230,14 @@ input[type=number]::-webkit-outer-spin-button{
   cursor:pointer;
   margin-bottom:14px;
 }
-
-/* ACTIONS */
+.add-row.danger{
+  color: var(--text-muted);
+  border-style: solid;
+}
 .modal-actions{
   display:flex;
   gap:10px;
 }
-
 .modal-actions button{
   flex:1;
   padding:10px;
@@ -260,49 +246,27 @@ input[type=number]::-webkit-outer-spin-button{
   background:none;
   cursor:pointer;
 }
-
 .modal-actions .primary{
   border-color:var(--text-main);
   color:var(--text-main);
 }
-
 .modal-actions .secondary{
   color:var(--text-muted);
 }
-
 .limit-row{
   display:flex;
   align-items:center;
   gap:8px;
   margin-bottom:10px;
 }
-
-.limit-row input[type="checkbox"]{
-  flex:0 0 16px;
-}
-
-.limit-row input[type="text"]{
-  flex:2;
-}
-
-.limit-row input[type="number"]{
-  flex:1;
-}
-
-.modal-card{
-  overflow:hidden;
-}
-
+.limit-row input[type="checkbox"]{ flex:0 0 16px; }
+.limit-row input[type="text"]{ flex:2; }
+.limit-row input[type="number"]{ flex:1; }
 .limit-check{
   width:16px;
   height:16px;
   accent-color: var(--text-main);
   cursor:pointer;
-}
-
-.add-row.danger{
-  color: var(--text-muted);
-  border-style: solid;
 }
 </style>
 </head>
@@ -328,21 +292,23 @@ input[type=number]::-webkit-outer-spin-button{
 <section class="section">
   <div class="title">Цель</div>
 
-  <div class="stat-main" id="capitalMain">—</div>
+  <!-- сюда подставим реальный капитал -->
+  <div class="stat-main positive" id="capitalMain">—</div>
   <div class="stat-caption">Общий капитал</div>
-  <div class="stat-sub" id="capitalDelta">—</div>
+  <div class="stat-sub" id="capitalSub"> </div>
 
+  <!-- Пока оставляем как визуальные карточки; позже подключим расчёт по видам -->
   <div class="stats">
     <div>
-      <div class="stat-value" id="savedVal">—</div>
+      <div class="stat-value" id="savedBox">—</div>
       <div class="stat-label">Сэкономлено</div>
     </div>
     <div>
-      <div class="stat-value" id="incomeVal">—</div>
+      <div class="stat-value" id="saved2Box">—</div>
       <div class="stat-label">Отложено</div>
     </div>
     <div>
-      <div class="stat-value" id="investedVal">—</div>
+      <div class="stat-value" id="investedBox">—</div>
       <div class="stat-label">Инвестировано</div>
     </div>
   </div>
@@ -352,14 +318,15 @@ input[type=number]::-webkit-outer-spin-button{
 <section class="section">
   <div class="title">Зафиксировать действие</div>
   <form class="form" id="actionForm">
-    <select id="kindSelect">
+    <!-- ВАЖНО: value = kind для backend -->
+    <select id="kind">
       <option value="save">Сэкономил</option>
-      <option value="income">Отложил</option>
+      <option value="save">Отложил</option>
       <option value="invest">Инвестировал</option>
       <option value="expense">Расходовал</option>
-      <option value="withdraw">Вывел</option>
     </select>
-    <input id="amountInput" type="number" placeholder="Сумма (₽)" required>
+
+    <input id="amount" type="number" placeholder="Сумма (₽)" required>
     <button type="submit" id="submitBtn">Подтвердить</button>
   </form>
 </section>
@@ -367,9 +334,13 @@ input[type=number]::-webkit-outer-spin-button{
 <!-- ===== ЛИМИТЫ НА МЕСЯЦ ===== -->
 <section class="section">
   <div class="title" id="limitsTitle">Лимиты · месяц</div>
+
   <button class="limits-btn" onclick="openLimitsModal()">
     Управление лимитами
   </button>
+
+  <!-- вывод лимитов под кнопкой -->
+  <div class="limits-list" id="limitsList"></div>
 </section>
 
 <!-- ПОТОК -->
@@ -386,16 +357,21 @@ input[type=number]::-webkit-outer-spin-button{
     <div class="modal-card">
       <div class="modal-title">Лимиты · месяц</div>
 
-      <div id="limitsRows"></div>
+      <div id="limitsRows">
+        <div class="limit-row">
+          <input type="checkbox" class="limit-check">
+          <input class="limit-category" placeholder="Категория">
+          <input class="limit-value" type="number" placeholder="Лимит ₽">
+        </div>
+      </div>
 
       <button class="add-row" onclick="addLimitRow()">+ Добавить категорию</button>
       <button class="add-row danger" onclick="removeSelectedLimits()">Удалить выбранные</button>
 
       <div class="modal-actions">
-        <button class="secondary" onclick="closeLimitsModal()">Закрыть</button>
-        <button class="primary" onclick="saveLimits()">Сохранить</button>
+        <button type="button" class="secondary" onclick="closeLimitsModal()">Закрыть</button>
+        <button type="button" class="primary" onclick="saveLimits()">Сохранить</button>
       </div>
-
     </div>
   </div>
 </section>
@@ -403,35 +379,35 @@ input[type=number]::-webkit-outer-spin-button{
 </main>
 
 <script>
-/* ---------- helpers ---------- */
-const fmtRub = (n) => {
-  const sign = n < 0 ? "−" : "";
-  const abs = Math.abs(Math.round(n));
-  return sign + abs.toLocaleString("ru-RU") + " ₽";
+/* ======================= utils ======================= */
+const fmtMoney = (n) => {
+  const sign = n > 0 ? "+" : "";
+  return sign + Number(n).toLocaleString("ru-RU") + " ₽";
 };
-
 const iso = (d) => d.toISOString().slice(0,10);
 const daysAgo = (n) => new Date(Date.now() - n*86400000);
 
-function monthNameRu(m){
-  const names=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
-  return names[m-1] || "месяц";
+async function getJSON(url){
+  const r = await fetch(url);
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function postJSON(url, body){
+  const r = await fetch(url, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(body)
+  });
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
 }
 
-function formatDateRu(isoDate){
-  // isoDate: YYYY-MM-DD
-  const [y,m,d]=isoDate.split("-").map(Number);
-  const months=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
-  return `${d} ${months[m-1]}`;
-}
-
-/* ---------- DATE PICKER UI ---------- */
+/* ======================= UI toggles ======================= */
 function toggleDate(){
   const d = document.getElementById("datePicker");
   d.style.display = d.style.display === "block" ? "none" : "block";
 }
 
-/* ---------- FLOW TOGGLE ---------- */
 let flowOpen = true;
 function toggleFlow(){
   const list = document.getElementById("flowList");
@@ -441,238 +417,190 @@ function toggleFlow(){
   icon.innerText = flowOpen ? "▾" : "▸";
 }
 
-/* ---------- API ---------- */
-async function apiGet(url){
-  const r = await fetch(url);
-  if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
-  return await r.json();
-}
-
-async function apiPost(url, body){
-  const r = await fetch(url,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(body)
-  });
-  if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
-  return await r.json();
-}
-
-/* ---------- LOAD: capital ---------- */
+/* ======================= FINANCE: capital ======================= */
 async function loadCapital(){
-  const data = await apiGet("/api/finance/capital");
-  const total = data.total || 0;
-
+  const data = await getJSON("/api/finance/capital"); // { total }
+  const total = Number(data.total || 0);
   const el = document.getElementById("capitalMain");
-  el.textContent = fmtRub(total);
-  el.className = "stat-main " + (total>=0 ? "positive":"negative");
 
-  // "дельта" — прирост за последние 30 дней (по net из flow)
-  const from = iso(daysAgo(30));
-  const to = iso(new Date());
-  const days = await apiGet(`/api/finance/flow?start=${from}&end=${to}`);
-  const net30 = (days || []).reduce((a,d)=>a+(d.net||0),0);
+  el.textContent = total.toLocaleString("ru-RU") + " ₽";
+  el.className = "stat-main " + (total >= 0 ? "positive" : "negative");
 
-  const deltaEl = document.getElementById("capitalDelta");
-  deltaEl.textContent = (net30>=0?"+":"") + fmtRub(net30) + " к " + formatDateRu(to);
-  deltaEl.className = "stat-sub " + (net30>=0 ? "positive":"negative");
-
-  // агрегаты по kind за 30 дней
-  let saved=0, invested=0, income=0;
-  (days || []).forEach(d=>{
-    (d.events||[]).forEach(e=>{
-      if(e.kind==="save") saved += e.amount||0;
-      if(e.kind==="invest") invested += e.amount||0;
-      if(e.kind==="income") income += e.amount||0;
-    });
-  });
-
-  document.getElementById("savedVal").textContent = fmtRub(saved);
-  document.getElementById("savedVal").className = "stat-value " + (saved>=0 ? "positive":"negative");
-
-  document.getElementById("incomeVal").textContent = fmtRub(income);
-  document.getElementById("incomeVal").className = "stat-value " + (income>=0 ? "positive":"negative");
-
-  document.getElementById("investedVal").textContent = fmtRub(invested);
-  document.getElementById("investedVal").className = "stat-value " + (invested>=0 ? "positive":"negative");
+  // пока простая подпись (позже сделаем "к дате" и цель)
+  document.getElementById("capitalSub").textContent = total >= 0
+    ? "Капитал растёт"
+    : "Капитал снижается";
 }
 
-/* ---------- LOAD: flow list (7 days) ---------- */
+/* ======================= FINANCE: flow (7 days) ======================= */
 async function loadFlow(){
   const from = iso(daysAgo(7));
   const to = iso(new Date());
-  const days = await apiGet(`/api/finance/flow?start=${from}&end=${to}`);
+
+  // у тебя уже работает вариант start/end (ты писал что 200 OK)
+  const days = await getJSON(`/api/finance/flow?start=${from}&end=${to}`);
 
   const box = document.getElementById("flowList");
   box.innerHTML = "";
 
-  // title month (из today)
-  const now = new Date();
-  document.getElementById("flowTitle").textContent = `Поток капитала · ${monthNameRu(now.getMonth()+1)}`;
-
-  (days || []).forEach(d=>{
-    const dayBlock = document.createElement("div");
-    dayBlock.className = "flow-day";
-
-    dayBlock.innerHTML = `<div class="flow-date">${formatDateRu(d.day)}</div>`;
+  days.forEach(d=>{
+    const dayWrap = document.createElement("div");
+    dayWrap.className = "flow-day";
+    dayWrap.innerHTML = `<div class="flow-date">${d.day}</div>`;
 
     (d.events || []).forEach(e=>{
-      const amount = e.amount || 0;
-      const cls = amount>=0 ? "positive":"negative";
-      const label = e.kind; // пока kind (категории будут позже)
-      dayBlock.innerHTML += `
+      dayWrap.innerHTML += `
         <div class="flow-item">
-          <span>${label}</span>
-          <span class="${cls}">${fmtRub(amount)}</span>
-        </div>`;
+          <span>${e.kind}</span>
+          <span class="${Number(e.amount) >= 0 ? "positive" : "negative"}">
+            ${fmtMoney(e.amount)}
+          </span>
+        </div>
+      `;
     });
 
-    const net = d.net || 0;
-    dayBlock.innerHTML += `
-      <div class="flow-total ${net>=0?"positive":"negative"}">
-        Итог дня: ${fmtRub(net)}
-      </div>`;
+    dayWrap.innerHTML += `
+      <div class="flow-total ${Number(d.net) >= 0 ? "positive" : "negative"}">
+        Итог дня: ${fmtMoney(d.net)}
+      </div>
+    `;
 
-    box.appendChild(dayBlock);
+    box.appendChild(dayWrap);
   });
 }
 
-/* ---------- LOAD: candle chart (30 days) ---------- */
-async function loadChart(){
-  const from = iso(daysAgo(30));
-  const to = iso(new Date());
-  const days = await apiGet(`/api/finance/flow?start=${from}&end=${to}`);
-
-  // строим candles от net (капитал как линия)
-  let base = 0;
-  const candles = (days || []).slice().reverse().map(d=>{
-    const o = base;
-    const c = base + (d.net||0);
-    const hi = Math.max(o,c);
-    const lo = Math.min(o,c);
-    base = c;
-    return [o,hi,lo,c];
-  });
-
-  drawCandles(candles);
-
-  // interpretation (без цитат пока, но реальная математика)
-  const nets = (days||[]).map(d=>d.net||0);
-  const today = nets.length ? nets[nets.length-1] : 0;
-  const avg = nets.length ? nets.reduce((a,b)=>a+b,0)/nets.length : 0;
-
-  document.getElementById("interpretation").innerHTML = `
-    <div>Сегодня: <b class="${today>=0?"positive":"negative"}">${fmtRub(today)}</b></div>
-    <div>В среднем: <b>${fmtRub(avg)}</b> в день</div>
-    <div class="${today>=avg?"positive":"negative"}">
-      ${today>=avg ? "Сегодняшний результат выше среднего" : "Сегодняшний темп ниже среднего"}
-    </div>
-  `;
-}
-
-function drawCandles(candles){
+/* ======================= FINANCE: candles (30 days) ======================= */
+function drawCandlesFromDailyNet(daily){
   const svg = document.getElementById("chart");
   svg.innerHTML = "";
 
-  const w = svg.clientWidth, h = svg.clientHeight, p = 10;
-  if(!candles.length){
-    return;
-  }
+  const w = svg.clientWidth || 360;
+  const h = svg.clientHeight || 180;
+  const p = 10;
+
+  // Превратим "net per day" в "price series"
+  // base = 10000, close = base + net
+  let base = 10000;
+  const candles = daily.map(net=>{
+    const o = base;
+    const c = base + Number(net || 0);
+    const hi = Math.max(o,c);
+    const lo = Math.min(o,c);
+    base = c;
+    return [o, hi, lo, c];
+  });
+
   const vals = candles.flat();
   const max = Math.max(...vals);
   const min = Math.min(...vals);
-  const denom = (max - min) || 1;
+  const sy = v => (h - p) - ((v - min) / (max - min || 1)) * (h - p*2);
 
-  const sy = v => h - p - ((v - min) / denom) * (h - p * 2);
   const step = w / candles.length;
   const cw = step * 0.6;
 
-  candles.forEach((c, i) => {
-    const [o, hi, lo, cl] = c;
-    const x = i * step + step / 2 - cw / 2;
+  candles.forEach((c,i)=>{
+    const [o,hi,lo,cl] = c;
+    const x = i*step + step/2 - cw/2;
     const color = cl >= o ? "var(--green)" : "var(--red)";
 
-    const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    wick.setAttribute("x1", x + cw / 2);
-    wick.setAttribute("x2", x + cw / 2);
+    const wick = document.createElementNS("http://www.w3.org/2000/svg","line");
+    wick.setAttribute("x1", x + cw/2);
+    wick.setAttribute("x2", x + cw/2);
     wick.setAttribute("y1", sy(hi));
     wick.setAttribute("y2", sy(lo));
     wick.setAttribute("stroke", color);
     svg.appendChild(wick);
 
-    const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    const body = document.createElementNS("http://www.w3.org/2000/svg","rect");
     body.setAttribute("x", x);
     body.setAttribute("width", cw);
-    body.setAttribute("y", sy(Math.max(o, cl)));
-    body.setAttribute("height", Math.max(1, Math.abs(sy(o) - sy(cl))));
+    body.setAttribute("y", sy(Math.max(o,cl)));
+    body.setAttribute("height", Math.max(2, Math.abs(sy(o) - sy(cl))));
     body.setAttribute("fill", color);
     svg.appendChild(body);
   });
 }
 
-/* ---------- FORM submit ---------- */
+async function loadChart(){
+  const from = iso(daysAgo(30));
+  const to = iso(new Date());
+  const days = await getJSON(`/api/finance/flow?start=${from}&end=${to}`);
+
+  // days = [{day, net, events}]
+  // Нужно по времени слева направо: старые → новые
+  const ordered = [...days].reverse();
+  const dailyNet = ordered.map(d => Number(d.net || 0));
+
+  drawCandlesFromDailyNet(dailyNet);
+}
+
+/* ======================= INTERPRETATION (временно) ======================= */
+function setInterpretationStub(){
+  document.getElementById("interpretation").innerHTML = `
+    <div class="quote">Быстро — это медленно, но постоянно</div>
+    <div class="author">— Сенека</div>
+  `;
+}
+
+/* ======================= ACTION FORM: реально пишем в API ======================= */
 const form = document.getElementById("actionForm");
 const btn = document.getElementById("submitBtn");
 
-form.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e)=>{
   e.preventDefault();
 
-  const kind = document.getElementById("kindSelect").value;
-  const amount = Number(document.getElementById("amountInput").value);
+  const kind = document.getElementById("kind").value;
+  const amount = Number(document.getElementById("amount").value);
 
-  if(!amount || amount<=0){
+  if(!amount || amount <= 0){
     alert("Введите сумму");
     return;
   }
 
-  btn.innerText = "Сохраняем...";
   btn.disabled = true;
+  btn.innerText = "Сохраняем…";
 
   try{
-    await apiPost("/api/finance/events",{
+    await postJSON("/api/finance/events", {
       kind,
       amount,
       category_id: null,
       date: null
     });
 
-    btn.innerText = "Зафиксировано";
     form.reset();
 
-    // обновляем всё
+    // Обновляем данные на странице
     await Promise.all([loadCapital(), loadFlow(), loadChart()]);
+    btn.innerText = "Зафиксировано";
   }catch(err){
     console.error(err);
     btn.innerText = "Ошибка";
-    alert("Не удалось сохранить действие");
-  }finally{
-    setTimeout(()=>{
-      btn.innerText = "Подтвердить";
-      btn.disabled = false;
-    }, 600);
+    alert("Не удалось сохранить действие. Проверь сервер/логи.");
   }
+
+  setTimeout(()=>{
+    btn.innerText = "Подтвердить";
+    btn.disabled = false;
+  }, 800);
 });
 
-/* ---------- LIMITS MODAL ---------- */
+/* ======================= LIMITS MODAL ======================= */
 function openLimitsModal(){
   document.getElementById("limitsModal").style.display = "flex";
-  loadLimits().catch(console.error);
 }
-
 function closeLimitsModal(){
   document.getElementById("limitsModal").style.display = "none";
 }
 
-function addLimitRow(prefill){
+function addLimitRow(){
   const row = document.createElement("div");
   row.className = "limit-row";
-
   row.innerHTML = `
     <input type="checkbox" class="limit-check">
-    <input class="limit-category" type="text" placeholder="Категория" value="${prefill?.category ? escapeHtml(prefill.category) : ""}">
-    <input class="limit-value" type="number" placeholder="Лимит ₽" value="${prefill?.monthly_limit ?? ""}">
+    <input class="limit-category" placeholder="Категория">
+    <input class="limit-value" type="number" placeholder="Лимит ₽">
   `;
-
   document.getElementById("limitsRows").appendChild(row);
 }
 
@@ -684,92 +612,95 @@ function removeSelectedLimits(){
   });
 }
 
-function escapeHtml(s){
-  return String(s)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+/* ===== ЛИМИТЫ: загрузка/вывод под кнопкой =====
+   Сейчас backend limits не использует auth и требует user_id в фильтрах/вставке.
+   Поэтому временно user_id = 1 (как у тебя было).
+   Далее сделаем нормально: backend сам определяет текущего юзера и фронт не передает user_id.
+*/
+const TEMP_USER_ID = 1;
+
+function monthYearNow(){
+  const d = new Date();
+  return { month: d.getMonth()+1, year: d.getFullYear() };
 }
 
 async function loadLimits(){
-  const now = new Date();
-  const month = now.getMonth()+1;
-  const year = now.getFullYear();
+  const {month, year} = monthYearNow();
 
-  document.getElementById("limitsTitle").textContent = `Лимиты · ${monthNameRu(month)}`;
-  document.querySelector("#limitsModal .modal-title").textContent = `Лимиты · ${monthNameRu(month)}`;
+  // безопасно было бы не давать выбирать user_id на фронте, но пока так
+  const limits = await getJSON(`/api/user/data?user_id=${TEMP_USER_ID}&month=${month}&year=${year}`);
 
-  const box = document.getElementById("limitsRows");
-  box.innerHTML = "";
+  // заголовок
+  const months = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+  document.getElementById("limitsTitle").textContent = `Лимиты · ${months[month-1]}`;
 
-  // Твой эндпоинт: GET /api/user/data?month=&year=
-  // Вернёт список лимитов (как ты в сервисе делаешь)
-  let data = [];
-  try{
-    data = await apiGet(`/api/user/data?month=${month}&year=${year}`);
-  }catch(e){
-    // если пока нет — это ок
-    data = [];
-  }
+  // список под кнопкой
+  const list = document.getElementById("limitsList");
+  list.innerHTML = "";
 
-  if(!data.length){
-    addLimitRow();
+  if(!limits.length){
+    list.innerHTML = `<div class="limit-chip"><span class="muted">Лимитов пока нет</span><span class="muted">—</span></div>`;
     return;
   }
 
-  data.forEach(l=>{
-    addLimitRow({
-      category: l.category,
-      monthly_limit: l.monthly_limit
-    });
+  limits.forEach(l=>{
+    const item = document.createElement("div");
+    item.className = "limit-chip";
+    item.innerHTML = `
+      <span>${l.category}</span>
+      <span>${Number(l.monthly_limit).toLocaleString("ru-RU")} ₽</span>
+    `;
+    list.appendChild(item);
   });
-}
 
-async function saveLimits(){
-  const now = new Date();
-  const month = now.getMonth()+1;
-  const year = now.getFullYear();
+  // также заполним модалку (для удобства редактирования)
+  const rowsBox = document.getElementById("limitsRows");
+  rowsBox.innerHTML = "";
+  limits.forEach(l=>{
+    const row = document.createElement("div");
+    row.className = "limit-row";
+    row.innerHTML = `
+      <input type="checkbox" class="limit-check">
+      <input class="limit-category" value="${l.category}">
+      <input class="limit-value" type="number" value="${l.monthly_limit}">
+    `;
+    rowsBox.appendChild(row);
+  });
 
-  const rows = document.querySelectorAll("#limitsRows .limit-row");
-
-  // сохраняем каждую строку POST /api/limits
-  // Твой LimitIn судя по коду принимает (user_id?, category, month, year, monthly_limit) — у тебя в limits.py user_id не берется из auth.
-  // Поэтому здесь нужно user_id: 1 временно (как раньше), иначе бек не знает кого сохранять.
-  // Если хочешь — сделаем limits роут безопасным через auth в следующем шаге.
-  const user_id = 1;
-
-  try{
-    for(const r of rows){
-      const category = r.querySelector(".limit-category")?.value?.trim();
-      const monthly_limit = Number(r.querySelector(".limit-value")?.value);
-
-      if(!category || !monthly_limit || monthly_limit<=0) continue;
-
-      await apiPost("/api/limits",{
-        user_id,
-        category,
-        month,
-        year,
-        monthly_limit
-      });
-    }
-
-    closeLimitsModal();
-  }catch(err){
-    console.error(err);
-    alert("Не удалось сохранить лимиты");
+  if(!limits.length){
+    addLimitRow();
   }
 }
 
-/* ---------- INIT ---------- */
-(async function init(){
-  const now = new Date();
-  const month = now.getMonth()+1;
-  document.getElementById("limitsTitle").textContent = `Лимиты · ${monthNameRu(month)}`;
+async function saveLimits(){
+  const {month, year} = monthYearNow();
+  const rows = document.querySelectorAll("#limitsRows .limit-row");
 
+  // сохраняем построчно (позже сделаем batch эндпоинт, но пока ок)
+  for(const row of rows){
+    const category = row.querySelector(".limit-category")?.value?.trim();
+    const value = Number(row.querySelector(".limit-value")?.value);
+
+    if(!category || !value || value<=0) continue;
+
+    await postJSON("/api/limits", {
+      user_id: TEMP_USER_ID,      // временно
+      category: category,
+      monthly_limit: value,
+      month: month,
+      year: year
+    });
+  }
+
+  closeLimitsModal();
+  await loadLimits();
+}
+
+/* ======================= INIT ======================= */
+(async ()=>{
+  setInterpretationStub();
   await Promise.all([loadCapital(), loadFlow(), loadChart()]);
+  await loadLimits();
 })();
 </script>
 

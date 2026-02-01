@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Request, HTTPException, Query
 from datetime import date
 from core.auth import get_current_user_id
-from models.schemas import FinanceEventIn, CapitalOut
+from models.schemas import FinanceEventIn, CapitalOut, FinanceKind
 from services.finance_service import (
     create_event, get_capital, get_flow, get_day
 )
+
 
 router = APIRouter(prefix="/api/finance", tags=["finance"])
 
@@ -46,3 +47,9 @@ async def flow(
 async def day_view(request: Request, date: date):
     user_id = await get_current_user_id(request)
     return await get_day(user_id, date)
+
+
+@router.get("/kinds")
+def kinds():
+    return list(FinanceKind)
+
