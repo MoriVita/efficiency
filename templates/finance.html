@@ -301,7 +301,7 @@ input[type=number]::-webkit-outer-spin-button{
   <div class="stats">
     <div>
       <div class="stat-value" id="savedBox">—</div>
-      <div class="stat-label">Сэкономлено</div>
+      <div class="stat-label" id="saveSum">Сэкономлено</div>
     </div>
     <div>
       <div class="stat-value" id="saved2Box">—</div>
@@ -380,6 +380,30 @@ input[type=number]::-webkit-outer-spin-button{
 
 <script>
 /* ======================= utils ======================= */
+
+#вывод сэкономленной суммы за период - (сделать редактируемые данные)
+async function loadSaved() {
+  const data = await getJSON(
+    "/api/finance/flow?start=2025-01-01&end=2026-12-31"
+  );
+
+  // все события
+  const events = data.flatMap(d => d.events);
+
+  // сумма только save
+  const savedTotal = events
+    .filter(e => e.kind === "save")
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  // вставляем в savedBox
+  const el = document.getElementById("savedBox");
+  el.textContent = savedTotal;
+}
+
+loadSaved();
+
+
+
 const fmtMoney = (n) => {
   const sign = n > 0 ? "+" : "";
   return sign + Number(n).toLocaleString("ru-RU") + " ₽";
@@ -400,6 +424,7 @@ async function postJSON(url, body){
   });
   if(!r.ok) throw new Error(await r.text());
   return r.json();
+
 }
 
 /* ======================= UI toggles ======================= */
@@ -571,7 +596,7 @@ form.addEventListener("submit", async (e)=>{
     form.reset();
 
     // Обновляем данные на странице
-    await Promise.all([loadCapital(), loadFlow(), loadChart()]);
+    await Promise.all([loadCapital(), loadFlow(), loadChart(), loadSaved()]);
     btn.innerText = "Зафиксировано";
   }catch(err){
     console.error(err);
@@ -699,7 +724,7 @@ async function saveLimits(){
 /* ======================= INIT ======================= */
 (async ()=>{
   setInterpretationStub();
-  await Promise.all([loadCapital(), loadFlow(), loadChart()]);
+  await Promise.all([loadCapital(), loadFlow(), loadChart(), loadSaved()]);
   await loadLimits();
 })();
 </script>
