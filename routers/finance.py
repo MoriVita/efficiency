@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Request, HTTPException, Query
 from datetime import date
 from core.auth import get_current_user_id
-from models.schemas import FinanceEventIn, CapitalOut, FinanceKind
+from models.schemas import FinanceEventIn, CapitalOut
 from services.finance_service import (
     create_event, get_capital, get_flow, get_day
 )
-
+from db.database import get_pool
 
 router = APIRouter(prefix="/api/finance", tags=["finance"])
 
@@ -50,6 +50,18 @@ async def day_view(request: Request, date: date):
 
 
 @router.get("/kinds")
-def kinds():
-    return list(FinanceKind)
+async def kinds(request: Request):
+    user_id = await get_current_user_id(request)
+
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT DISTINCT kind
+            FROM finance_events_v2
+            WHERE user_id = $1
+            ORDER BY kind
+        """, user_id)
+
+    return [r["kind"] for r in rows]
+
 

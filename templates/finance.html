@@ -381,8 +381,32 @@ input[type=number]::-webkit-outer-spin-button{
 <script>
 /* ======================= utils ======================= */
 
-#вывод сэкономленной суммы за период - (сделать редактируемые данные)
+
 async function loadSaved() {
+  const data = await getJSON(
+    "/api/finance/flow?start=2025-01-01&end=2026-12-31"
+  );
+
+  const events = data.flatMap(d => d.events);
+
+  function sumByKind(kind) {
+    return events
+      .filter(e => e.kind === kind)
+      .reduce((sum, e) => sum + e.amount, 0);
+  }
+
+  document.getElementById("savedBox").textContent = sumByKind("save");
+  document.getElementById("investedBox").textContent = sumByKind("invest");
+
+}
+
+loadSaved();
+
+
+
+
+
+async function investSaved() {
   const data = await getJSON(
     "/api/finance/flow?start=2025-01-01&end=2026-12-31"
   );
@@ -390,17 +414,17 @@ async function loadSaved() {
   // все события
   const events = data.flatMap(d => d.events);
 
-  // сумма только save
-  const savedTotal = events
-    .filter(e => e.kind === "save")
+  // сумма только invest
+  const investTotal = events
+    .filter(e => e.kind === "invest")
     .reduce((sum, e) => sum + e.amount, 0);
 
-  // вставляем в savedBox
-  const el = document.getElementById("savedBox");
-  el.textContent = savedTotal;
+  // вставляем в investedBox
+  const el = document.getElementById("investedBox");
+  el.textContent = investTotal;
 }
 
-loadSaved();
+investSaved();
 
 
 

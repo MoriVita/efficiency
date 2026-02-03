@@ -4,10 +4,7 @@ from datetime import datetime, date
 from enum import Enum
 
 
-class FinanceKind(str, Enum):
-    income = "income"
-    expense = "expense"
-    transfer = "transfer"
+
 
 
 class FinanceEntry(BaseModel):
