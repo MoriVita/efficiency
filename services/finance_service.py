@@ -95,6 +95,25 @@ async def get_flow(user_id: int, date_from, date_to):
 
         return result
 
+async def get_category_limits(user_id: int):
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT
+                cl.id,
+                c.name AS category,
+                cl.monthly_limit,
+                cl.month,
+                cl.year
+            FROM category_limits cl
+            JOIN categories c ON c.id = cl.category_id
+            WHERE cl.user_id = $1
+            ORDER BY cl.year DESC, cl.month DESC
+        """, user_id)
+
+    return [dict(r) for r in rows]
+
+
 
 
 async def get_day(user_id: int, day: date):
@@ -115,3 +134,8 @@ async def get_day(user_id: int, day: date):
             "net": net,
             "events": [dict(r) for r in rows]
         }
+
+
+
+
+
